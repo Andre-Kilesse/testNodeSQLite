@@ -2,6 +2,11 @@ const express = require('express')
 const app = express()
 const port = 3001
 
+//Rotas para o cadastro de livros
+const livros = require('./livros')
+
+app.use('/livros', livros)
+
 app.get('/', (req, res) => {
   res.send('Olá Mundo!')
 })
