@@ -1,0 +1,13 @@
+# Ignorar dependências do Node.js
+node_modules/
+
+# Ignorar banco de dados SQLite
+data/
+*.db
+
+# Ignorar arquivos de configuração sensíveis
+.env
+
+# Ignorar arquivos de log
+*.log
+
