@@ -1,13 +1,12 @@
-//por ser apenas para apredizado, usarei o CORS
-const cors = require('cors')
-router.use(cors())
-
 const express = require('express')
 const router = express.Router()
-
+const cors = require('cors')
 const dbKnex = require('./data/db_config')
 
-//get para consulta
+// Habilitar o CORS
+router.use(cors())  
+
+// get para consulta
 router.get('/', async(req, res) => {
     try{
         const livros = await dbKnex('livros').orderBy('id', 'desc')
@@ -16,11 +15,10 @@ router.get('/', async(req, res) => {
         res.status(400).json({msg: error.message})
     }
 })
-module.exports = router
 
-//post para inclusão
+// post para inclusão
 router.post('/', async(req, res) => {
-    //desestruturação dos dados recebidos
+    // desestruturação dos dados recebidos
     const { titulo, autor, ano, preco, foto} = req.body
 
     if(!titulo || !autor || !ano || !preco || !foto){
@@ -36,22 +34,22 @@ router.post('/', async(req, res) => {
     }
 })
 
-//put para alteração
+// put para alteração
 router.put('/:id', async(req, res) => {
     const id = req.params.id
-    const{ preco } = req.body
+    const { preco } = req.body
 
     try{
-        await dbKnex('livro').update({preco}).where('id', id)
+        await dbKnex('livros').update({preco}).where('id', id)
         res.status(200).json()
     }catch (error){
         res.status(400).json({msg: error.message})
     }
 })
 
-//delete para exclusão
+// delete para exclusão
 router.delete('/:id', async(req, res) => {
-    const{ id } = req.params
+    const { id } = req.params
     try{
         await dbKnex('livros').del().where({ id })
         res.status(200).json()
@@ -60,7 +58,7 @@ router.delete('/:id', async(req, res) => {
     }
 })
 
-//filtro por titulo ou autor
+// filtro por titulo ou autor
 router.get('/filtro/:palavra', async(req, res) => {
     const palavra = req.params.palavra
     try{
@@ -73,27 +71,26 @@ router.get('/filtro/:palavra', async(req, res) => {
     }
 })
 
-//resumo cadastro de livros
+// resumo cadastro de livros
 router.get('/dados/resumo', async(req, res) => {
-    //metodos para dados da tabela
     try{
         const consulta = await dbKnex('livros')
         .count({num: '*'})
         .sum({soma: 'preco'})
         .max({maior: 'preco'})
         .avg({media: 'preco'})
-        const {num, soma, maior, media} = consulta[0]
-        res.status(200).json({num, soma, maior, media: Number(media.toFixed(2)) })
+        const { num, soma, maior, media } = consulta[0]
+        res.status(200).json({ num, soma, maior, media: Number(media.toFixed(2)) })
     }catch(error){
         res.status(400).json({msg: error.message})
     }
 })
 
-//soma dos preços por ano
+// soma dos preços por ano
 router.get('/dados/grafico', async(req, res) => {
     try{
         const totalPorAno = await dbKnex('livros').select('ano')
-        .sum({total: 'preco'}).groupBy('ano')
+        .sum({ total: 'preco' }).groupBy('ano')
         res.status(200).json(totalPorAno)
     }catch(error){
         res.status(400).json({msg: error.message})
