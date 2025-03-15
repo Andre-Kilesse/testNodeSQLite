@@ -1,3 +1,7 @@
+//por ser apenas para apredizado, usarei o CORS
+const cors = require('cors')
+router.use(cors())
+
 const express = require('express')
 const router = express.Router()
 
@@ -52,6 +56,46 @@ router.delete('/:id', async(req, res) => {
         await dbKnex('livros').del().where({ id })
         res.status(200).json()
     }catch (error){
+        res.status(400).json({msg: error.message})
+    }
+})
+
+//filtro por titulo ou autor
+router.get('/filtro/:palavra', async(req, res) => {
+    const palavra = req.params.palavra
+    try{
+        const livros = await dbKnex('livros')
+        .where('titulo', 'like', `%${palavra}%`)
+        .orWhere('autor', 'like', `%${palavra}%`)
+        res.status(200).json(livros)
+    }catch(error){
+        res.status(400).json({msg: error.message})
+    }
+})
+
+//resumo cadastro de livros
+router.get('/dados/resumo', async(req, res) => {
+    //metodos para dados da tabela
+    try{
+        const consulta = await dbKnex('livros')
+        .count({num: '*'})
+        .sum({soma: 'preco'})
+        .max({maior: 'preco'})
+        .avg({media: 'preco'})
+        const {num, soma, maior, media} = consulta[0]
+        res.status(200).json({num, soma, maior, media: Number(media.toFixed(2)) })
+    }catch(error){
+        res.status(400).json({msg: error.message})
+    }
+})
+
+//soma dos preços por ano
+router.get('/dados/grafico', async(req, res) => {
+    try{
+        const totalPorAno = await dbKnex('livros').select('ano')
+        .sum({total: 'preco'}).groupBy('ano')
+        res.status(200).json(totalPorAno)
+    }catch(error){
         res.status(400).json({msg: error.message})
     }
 })
